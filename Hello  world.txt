@@ -1,0 +1,49 @@
+-- PURPOSE: Step 1 - Define the simplest form possible of the focus question.
+SELECT 'Hello World' AS My_Question;
+
+-- PURPOSE: Step 2 - Map out current placement and target data destination parameters.
+SELECT 'This is my initial answer milestone on the path to Hello World.' AS My_Answer;
+
+-- PURPOSE: Step 3 - Create an ad hoc SQL prototype statement.
+SELECT 'Hello World' AS AdHoc_Result;
+
+-- PURPOSE: Step 4 - Transform the compiled ad hoc block into an abstracted view.
+USE EC_IT143_DA;
+
+-- PURPOSE: Step 5.1 - Materialize schema blueprint from view via SELECT INTO.
+USE EC_IT143_DA;
+SELECT View_Result AS Table_Result INTO dbo.tbl_hello_world_AO FROM dbo.v_hello_world_AO;
+
+-- PURPOSE: Step 5.2 - Refine table architectures and enforce a clustered Primary Key.
+USE EC_IT143_DA;
+
+IF OBJECT_ID('dbo.tbl_hello_world_AO', 'U') IS NOT NULL DROP TABLE dbo.tbl_hello_world_AO;
+
+CREATE TABLE dbo.tbl_hello_world_AO (
+    my_id INT IDENTITY(1,1) NOT NULL,
+    Table_Result VARCHAR(50) NOT NULL,
+    CONSTRAINT PK_tbl_hello_world_AO PRIMARY KEY CLUSTERED (my_id ASC)
+);
+
+-- PURPOSE: Step 6 - Load the relational table from the view.
+USE EC_IT143_DA;
+
+TRUNCATE TABLE dbo.tbl_hello_world_AO;
+INSERT INTO dbo.tbl_hello_world_AO (Table_Result) SELECT View_Result FROM dbo.v_hello_world_AO;
+
+-- PURPOSE: Step 7 - Encapsulate ad hoc loading blocks inside a secure Stored Procedure.
+USE EC_IT143_DA;
+
+CREATE PROCEDURE dbo.usp_hello_world_load_AO AS
+BEGIN
+    SET NOCOUNT ON;
+    TRUNCATE TABLE dbo.tbl_hello_world_AO;
+    INSERT INTO dbo.tbl_hello_world_AO (Table_Result) SELECT View_Result FROM dbo.v_hello_world_AO;
+END;
+
+-- PURPOSE: Step 8 - Invoke processing commands and check final target layout arrays.
+USE EC_IT143_DA;
+
+EXEC dbo.usp_hello_world_load_AO;
+SELECT * FROM dbo.tbl_hello_world_AO;
+

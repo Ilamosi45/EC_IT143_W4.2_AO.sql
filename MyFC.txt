@@ -1,0 +1,72 @@
+-- PURPOSE: Step 1 - Formulate target question assessing month-by-month tracking spend.
+SELECT 'What is the total player salary tracking across the club monthly?' AS My_Question;
+
+
+EC_IT143_W4.2_MyFC_s1_AO.sqlsql-- AUTHOR: AO
+-- PURPOSE: Step 1 - Formulate target question assessing month-by-month tracking spend.
+SELECT 'What is the total player salary tracking across the club monthly?' AS My_Question;
+
+
+-- PURPOSE: Step 2 - Isolate data points matching fact transaction keys.
+SELECT 'Extract dimension records from tblPlayerFact cross-joined with historical tracking data.' AS My_Answer;
+
+
+-- PURPOSE: Step 3 - Construct ad hoc query using aggregate SUM operations.
+USE EC_IT143_DA;
+
+SELECT f.as_of_date AS Monthly_Snapshot, SUM(f.mtd_salary) AS Total_Club_Salary_Spend 
+FROM dbo.tblPlayerFact AS f GROUP BY f.as_of_date;
+
+
+-- PURPOSE: Step 4 - Establish structured database view abstraction layer.
+USE EC_IT143_DA;
+
+CREATE VIEW dbo.v_MyFC_salary_summary_AO AS
+SELECT f.as_of_date AS Monthly_Snapshot, SUM(f.mtd_salary) AS Total_Club_Salary_Spend 
+FROM dbo.tblPlayerFact AS f GROUP BY f.as_of_date;
+
+
+-- PURPOSE: Step 5.1 - Pipe raw view metadata columns into structural framework storage.
+USE EC_IT143_DA;
+
+SELECT Monthly_Snapshot, Total_Club_Salary_Spend INTO dbo.tbl_MyFC_salary_summary_AO FROM dbo.v_MyFC_salary_summary_AO;
+
+
+-- PURPOSE: Step 5.2 - Refine data limits, typing architecture, and map clustering constraints.
+USE EC_IT143_DA;
+
+IF OBJECT_ID('dbo.tbl_MyFC_salary_summary_AO', 'U') IS NOT NULL DROP TABLE dbo.tbl_MyFC_salary_summary_AO;
+
+CREATE TABLE dbo.tbl_MyFC_salary_summary_AO (
+    Summary_ID INT IDENTITY(1,1) NOT NULL,
+    Monthly_Snapshot DATE NOT NULL,
+    Total_Club_Salary_Spend DECIMAL(18, 2) NOT NULL,
+    CONSTRAINT PK_tbl_MyFC_salary_summary_AO PRIMARY KEY CLUSTERED (Summary_ID ASC)
+);
+
+
+-- PURPOSE: Step 6 - Re-populate data matrices through transactional pipelines.
+USE EC_IT143_DA;
+
+TRUNCATE TABLE dbo.tbl_MyFC_salary_summary_AO;
+INSERT INTO dbo.tbl_MyFC_salary_summary_AO (Monthly_Snapshot, Total_Club_Salary_Spend)
+SELECT Monthly_Snapshot, Total_Club_Salary_Spend FROM dbo.v_MyFC_salary_summary_AO;
+
+
+-- PURPOSE: Step 7 - Encapsulate operational loading loops within stored procedures.
+USE EC_IT143_DA;
+
+CREATE PROCEDURE dbo.usp_MyFC_salary_summary_load_AO AS
+BEGIN
+    SET NOCOUNT ON;
+    TRUNCATE TABLE dbo.tbl_MyFC_salary_summary_AO;
+    INSERT INTO dbo.tbl_MyFC_salary_summary_AO (Monthly_Snapshot, Total_Club_Salary_Spend)
+    SELECT Monthly_Snapshot, Total_Club_Salary_Spend FROM dbo.v_MyFC_salary_summary_AO;
+END;
+
+
+-- PURPOSE: Step 8 - Execute data process execution block and display records.
+USE EC_IT143_DA;
+
+EXEC dbo.usp_MyFC_salary_summary_load_AO;
+SELECT * FROM dbo.tbl_MyFC_salary_summary_AO ORDER BY Monthly_Snapshot ASC;

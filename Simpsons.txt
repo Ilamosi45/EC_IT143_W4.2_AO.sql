@@ -1,0 +1,63 @@
+-- PURPOSE: Step 1 - Formulate high-level inquiry on roster alignment metrics.
+SELECT 'How many characters are registered across each team or family lineage?' AS My_Question;
+
+
+-- PURPOSE: Step 2 - Document analytical path targeting family and group listings.
+SELECT 'Query the primary character dimensions and generate a group aggregation based on roster fields.' AS My_Answer;
+
+
+-- PURPOSE: Step 3 - Create prototype group aggregations over core character columns.
+USE EC_IT143_DA;
+
+SELECT d.Team_Name AS Group_Identifier, COUNT(d.pl_id) AS Character_Headcount 
+FROM dbo.tblPlayerDim AS d GROUP BY d.Team_Name;
+
+
+-- PURPOSE: Step 4 - Turn ad hoc selection blocks into view configurations.
+USE EC_IT143_DA;
+
+CREATE VIEW dbo.v_Simpsons_roster_summary_AO AS
+SELECT d.Team_Name AS Group_Identifier, COUNT(d.pl_id) AS Character_Headcount 
+FROM dbo.tblPlayerDim AS d GROUP BY d.Team_Name;
+
+
+-- PURPOSE: Step 5.1 - Drive physical target storage patterns via simple view conversion.
+USE EC_IT143_DA;
+
+SELECT Group_Identifier, Character_Headcount INTO dbo.tbl_Simpsons_roster_summary_AO FROM dbo.v_Simpsons_roster_summary_AO;
+
+
+-- PURPOSE: Step 5.2 - Explicitly construct and shape database column types and tracking identifiers.
+USE EC_IT143_DA;
+
+IF OBJECT_ID('dbo.tbl_Simpsons_roster_summary_AO', 'U') IS NOT NULL DROP TABLE dbo.tbl_Simpsons_roster_summary_AO;
+
+CREATE TABLE dbo.tbl_Simpsons_roster_summary_AO (
+    Roster_Summary_ID INT IDENTITY(1,1) NOT NULL,
+    Group_Identifier VARCHAR(100) NOT NULL,
+    Character_Headcount INT NOT NULL,
+    CONSTRAINT PK_tbl_Simpsons_roster_summary_AO PRIMARY KEY CLUSTERED (Roster_Summary_ID ASC)
+);
+
+Use code with caution.EC_IT143_W4.2_Simpsons_s6_AO.sqlsql-- AUTHOR: AO
+-- PURPOSE: Step 6 - Trigger clean table reloads mapping symmetrically back to view layers.
+USE EC_IT143_DA;
+
+
+-- PURPOSE: Step 7 - Commit logic patterns safely behind database procedure constraints.
+USE EC_IT143_DA;
+
+CREATE PROCEDURE dbo.usp_Simpsons_roster_summary_load_AO AS
+BEGIN
+    SET NOCOUNT ON;
+    TRUNCATE TABLE dbo.tbl_Simpsons_roster_summary_AO;
+    INSERT INTO dbo.tbl_Simpsons_roster_summary_AO (Group_Identifier, Character_Headcount)
+    SELECT Group_Identifier, Character_Headcount FROM dbo.v_Simpsons_roster_summary_AO;
+END;
+
+
+-- PURPOSE: Step 8 - Fire execution controls and evaluate output data ranges.
+USE EC_IT143_DA;
+
+EXEC dbo.usp_Simpsons_roster_summary_load_AO;
+SELECT * FROM dbo.tbl_Simpsons_roster_summary_AO ORDER BY Character_Headcount DESC;
